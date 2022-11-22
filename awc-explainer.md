@@ -28,8 +28,9 @@ Demo glitch app that ties in proposals from this doc https://seamless-titlebar-e
 
 VDI web clients have limited abilities to integrate remote application windows with the local desktop environment, which creates suboptimal experiences for their users. Currently, they can only present full disjoint remote desktop environments (e.g. in a local fullscreen window), or present individual remote applications in separate local windows with titlebar window controls that are inoperative, redundant, and confusing for users.
 
-![Remote window presented within a local window](image1.png "Remote window presented within a local window"){style="display:block; margin:auto; width:41rem; height:30rem"}
+![Remote window presented within a local window](image1.png "Remote window presented within a local window")
 <div align="center">Remote window presented within a local window</div>
+
 
 Several VDI clients, including Citrix and VMWare, have reported that their users strongly desire an integrated experience as their work is increasingly happening both on local client and remote host devices.
 
