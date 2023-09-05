@@ -4,7 +4,7 @@ Authors: [isandrk@chromium.org](mailto:isandrk@chromium.org), [msw@chromium.org]
 
 Reviewers: [domenic@chromium.org](mailto:domenic@chromium.org)
 
-Last updated: Nov 21, 2022
+Last updated: Sep 05, 2023
 
 ## Introduction
 
@@ -46,11 +46,10 @@ This proposal seeks to enable local web applications to convey a user's intended
 
 
 *   `await window.minimize()/maximize()/restore()` changes the window display state
-*   `window.displayState` yields the current display state
-*   `window.ondisplaystatechange` event is fired when the window display state changes
+*   `display-state` CSS media feature yields the current window display state
 *   `window.onmove` event is fired when the window moves
-*   `await window.setResizable(bool)` sets whether the window is user resizable
-*   `window.resizable` yields whether the window is user resizable
+*   `await window.setResizable(bool)` sets whether the window is user-resizable
+*   `resizable` CSS media feature yields whether the window is user-resizable
 
 Use cases explored here also rely upon a [parallel effort to standardize](https://github.com/w3c/csswg-drafts/issues/7017) the existing CSS property `-webkit-app-region/app-region`.
 
@@ -132,27 +131,28 @@ Code example of manually rolling the buttons (ref. [Electron seamless titlebar t
   app-region: no-drag;
 }
 
-/* Handle maximized state. */
-.maximized #titlebar {
-  width: 100%;
-  padding: 0;
-}
-
-.maximized #window-title {
-  margin-left: 12px;
-}
+/* Toggle maximize/restore buttons. */
 
 /* Hide restore button by default, show only in maximized state. */
 #restore-button {
   display: none !important;
 }
 
-.maximized #restore-button {
-  display: flex !important;
-}
-
-.maximized #maximize-button {
-  display: none;
+/* Handle maximized state. */
+@media (display-state: maximized) {
+  #titlebar {
+    width: 100%;
+    padding: 0;
+  }
+  #window-title {
+    margin-left: 12px;
+  }
+  #restore-button {
+    display: flex !important;
+  }
+  #maximize-button {
+    display: none;
+  }
 }
 ```
 
@@ -176,26 +176,25 @@ document.getElementById('restore-button').addEventListener('click', event => {
 document.getElementById('close-button').addEventListener('click', event => {
   window.close();
 });
+```
 
-/* Toggle maximize/restore buttons. */
-
-window.addEventListener('displaystatechange', event => {
-  maybeToggleButtons();
-});
-
-maybeToggleButtons();
-
-function maybeToggleButtons() {
-  if (window.displayState == 'maximized') {
-    document.body.classList.add('maximized');
-  } else {
-    document.body.classList.remove('maximized');
-  }
-}
+```js
+/* Query the window display-state in JS. */
+window.matchMedia("(display-state: maximized)").matches;
 ```
 
 
 In addition VDI apps may request that the client window be made resizable or not, to match the behavior of the remote window, for that we would also add `window.setResizable(bool)` async API function and we would get the value with `window.resizable` property. A new `resizeablechange` event on `window` is not needed at this time, since that property is only toggled by the app itself.
+
+
+```css
+/* Handle resizable styles. */
+@media (resizable: true) {
+  #class-name {
+    /*styles to be applied*/
+  }
+}
+```
 
 
 ```js
@@ -216,21 +215,13 @@ New `window.minimize()/maximize()/restore()` async APIs ask the user agent to pe
 *   `minimize()/maximize()/restore()` operations follow platform convention.
 *   [Snapped states](https://support.microsoft.com/en-us/windows/snap-your-windows-885a9b1e-a983-a3b1-16cd-c531795e6241) aren’t typically exposed to nor initiated by client applications on desktop platforms, and each platform does them a little differently. They are out of scope here.
 
-A new `window.displayState` property indicates the current display state of the provided window object. Possible values are `normal/minimized/maximized/fullscreen`. The property will always contain the value `normal` if there was an error (e.g. a lack of permission).
-
-A new `displaystatechange` event on `window` fires when the window’s display state changes, if the site has permission. When a user-agent determines that the window’s display state has changed since the last time these steps were run (e.g. as a result of the user minimizing a window), run these steps:
-
-
-
-1. If the site doesn’t have the Window Management permission, abort these steps.
-2. Update the `window.displayState` property with the new display state.
-3. Fire an event named `displaystatechange` at the `window` object.
+A new `display-state` CSS media feature indicates the current display state of the window. Possible values are `normal/minimized/maximized/fullscreen`. The property will always contain the value `normal` if there was an error (e.g. a lack of permission).
 
 A new `window.setResizable(bool)` async API asks the user agent to set whether users can resize the provided window object. It returns a Promise which is successfully resolved, or is rejected if there was an error (lack of permission). This allows VDI client applications to request that local windows match the behavior of the remote window.
 
 This API requests that the user agent prevent resize drag handles on top-level windows, and it has no effect on iframe windows. Fullscreen and maximize are prevented, but minimize and restore still work as expected. Not all resizes can be prevented (eg. window being moved to another display with a size smaller than the window) and it’s ultimately the client app's responsibility to handle such cases.
 
-A new `window.resizable` property indicates whether the provided window object is user resizable.
+A new `resizable` CSS media feature indicates whether the provided window object is user resizable.
 
 
 ## Alternatives considered
@@ -265,45 +256,53 @@ A new `window.resizable` property indicates whether the provided window object i
 
 
 
-*   Sync `window.displayState` and `window.resizable` attributes and a `displaystatechange` event on `window`
-    *   PROs:
-        *   Straightforward and convenient
-        *   Alignment with existing attributes on the window object
-        *   Ergonomic sync attribute access from event handlers
-    *   CONs:
-        *   Limited avenues for permission gating:
-            *   Always yield `normal` for `displayState`, `true` for `resizable` without permission
-            *   Do not fire `displaystatechange` without permission, or fire it immediately when a handler is added with a "permission missing" error.
-        *   Increases the fingerprinting surface of the user agent
-        *   Adds new attributes on a global interface
-*   Async `await window.getDisplayState()` yields the current window display state value (& similar `await window.getResizable()` yields whether the window is resizable)
-    *   PROs:
-        *   Simple well-defined API shape with one purpose
-        *   Supports permission gating
-    *   CONs:
-        *   Poor ergonomics for checking state from event handlers
-*   Async `await window.queryParam()` yields a dictionary with named param & value (`{state: 'maximized'}` or `{resizable: false}`)
-    *   PROs:
-        *   Supports permission gating
-    *   CONs:
-        *   API too generic and accepting an arbitrary string
-        *   Poor ergonomics for checking state from event handlers
-*   Async `await window.getDisplayState()` yields permission-gated access to a new `DisplayState` interface
-    *   PROs:
-        *   Precedent of <code>[window.getScreenDetails()](https://w3c.github.io/window-placement/#api-extensions-to-window)</code>, <code>[navigator.getBattery()](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getBattery)</code>, and <code>[navigator.requestMIDIAccess()](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess)</code>
-        *   Encapsulates permission-gated properties, methods, and event targets
-        *   Provides live data that callers can cache a reference to
-    *   CONs:
-        *   Minor added complexity for callers
-        *   Puts <code>minimize()/maximize()/restore()</code> in a different place than <code>close()</code>. (Although, <code>close()</code> is already different because it's sync)
-*   Sync <code>window.displayState</code> interface access
-    *   PROs:
-        *   Precedent of <code>[navigator.geolocation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/geolocation)</code> and <code>[navigator.clipboard](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/clipboard)</code>
-        *   Encapsulates properties, methods, and event targets
-        *   Provides live data that callers can cache a reference to
-    *   CONs:
-        *   Does not offer easy permission gating
-        *   Puts <code>minimize()/maximize()/restore()</code> in a different place than <code>close()</code>. (Although, <code>close()</code> is already different because it's sync)
+* `display-state` (& `resizable) `CSS media feature
+    * PROs:
+        * Precedent of [display-mode](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/display-mode)
+        * Allows for UI changes to be specified strictly in CSS (no need for JS logic)
+        * [change event](https://developer.mozilla.org/en-US/docs/Web/API/MediaQueryList/change_event) for free (don’t need to specify a separate `displaystatechange` event)
+    * CONs:
+        * Limited avenues for permission gating:
+            * Always yield `normal` for `display-state`, `true` for `resizable` without permission
+* Sync `window.displayState` and `window.resizable` attributes and a `displaystatechange` event on `window`
+    * PROs:
+        * Straightforward and convenient
+        * Alignment with existing attributes on the window object
+        * Ergonomic sync attribute access from event handlers
+    * CONs:
+        * Limited avenues for permission gating:
+            * Always yield `normal` for `displayState`, `true` for `resizable` without permission
+            * Do not fire `displaystatechange` without permission, or fire it immediately when a handler is added with a "permission missing" error.
+        * Increases the fingerprinting surface of the user agent
+        * Adds new attributes on a global interface
+* Async `await window.getDisplayState()` yields the current window display state value (& similar `await window.getResizable()` yields whether the window is resizable)
+    * PROs:
+        * Simple well-defined API shape with one purpose
+        * Supports permission gating
+    * CONs:
+        * Poor ergonomics for checking state from event handlers
+* Async `await window.queryParam()` yields a dictionary with named param & value (`{state: 'maximized'}` or `{resizable: false}`)
+    * PROs:
+        * Supports permission gating
+    * CONs:
+        * API too generic and accepting an arbitrary string
+        * Poor ergonomics for checking state from event handlers
+* Async `await window.getDisplayState()` yields permission-gated access to a new `DisplayState` interface
+    * PROs:
+        * Precedent of <code>[window.getScreenDetails()](https://w3c.github.io/window-placement/#api-extensions-to-window)</code>, <code>[navigator.getBattery()](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getBattery)</code>, and <code>[navigator.requestMIDIAccess()](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess)</code>
+        * Encapsulates permission-gated properties, methods, and event targets
+        * Provides live data that callers can cache a reference to
+    * CONs:
+        * Minor added complexity for callers
+        * Puts <code>minimize()/maximize()/restore()</code> in a different place than <code>close()</code>. (Although, <code>close()</code> is already different because it's sync)
+* Sync <code>window.displayState</code> interface access
+    * PROs:
+        * Precedent of <code>[navigator.geolocation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/geolocation)</code> and <code>[navigator.clipboard](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/clipboard)</code>
+        * Encapsulates properties, methods, and event targets
+        * Provides live data that callers can cache a reference to
+    * CONs:
+        * Does not offer easy permission gating
+        * Puts <code>minimize()/maximize()/restore()</code> in a different place than <code>close()</code>. (Although, <code>close()</code> is already different because it's sync)
 
 
 ### Extending app-region with minimize/maximize/restore/close types
@@ -317,6 +316,10 @@ An alternative to the JS API would be to extend `app-region` CSS to support mini
 *   CONs:
     *   might not work for all VDI’s use cases (user selecting a remote-app menu item like Window>Minimize would need a transient app-region and would be tricky; user pressing a remote-app-specific hotkey like Ctrl+M to minimize the remote window would be impossible)
 
+
+### Replacing window.setResizable() with manifest property and window.open() feature (static vs. dynamic resizable)
+
+The window resizable property could be set statically during window creation (via either manifest property or window.open() feature), but this doesn’t cover all of the VDI clients use-cases as the property could change dynamically during window life-time (since they display remote windows).
 
 ## Security & Privacy Considerations
 
