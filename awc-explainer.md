@@ -10,14 +10,14 @@ Last updated: Sep 05, 2023
 
 This proposal introduces additional ways for web applications to introspect and control their windows, to enable critical window management functionality on the web platform.
 
-The proposed enhancement would allow web applications to maximize, minimize, and restore their windows and introspect that window display state. Further, it allows applications to be notified when the window is repositioned, and control whether the window can be resized. The [window placement permission](https://webscreens.github.io/window-placement/#api-permissions) will be required for these capabilities.
+The proposed enhancement would allow web applications to maximize, minimize, and restore their windows and introspect that window display state. Further, it allows applications to be notified when the window is repositioned, and control whether the window can be resized. The [window management permission](https://w3c.github.io/window-management/#api-permissions) will be required for these capabilities.
 
 
 ## Background
 
 [Virtual Desktop Infrastructure](https://en.wikipedia.org/wiki/Desktop_virtualization) (VDI) providers allow software running remotely on a host device to be displayed on a separate client device. For example, the VDI provider's cloud might run a text processor application, and present the user interface window within a client device’s desktop environment, as if that application were running locally.
 
-[Additional Explorations](https://github.com/webscreens/window-placement/blob/main/additional_explorations.md#extend-apis-to-control-window-state-display-modes-etc) of [Multi-Screen Window Placement](https://github.com/w3c/window-placement) contained suggestions for incremental improvements to existing window management APIs. That helped inform this explainer, and contains more background.
+[Additional Explorations](https://github.com/w3c/window-management/blob/main/additional_explorations.md#extend-apis-to-control-window-state-display-modes-etc) of [Window Management](https://github.com/w3c/window-management) contained suggestions for incremental improvements to existing window management APIs. That helped inform this explainer, and contains more background.
 
 [Window Controls Overlay](https://wicg.github.io/window-controls-overlay/) offers new capabilities for web applications to control the area that would generally be occupied by the title bar in an installed web application running on a desktop environment. That specification also allows applications to [define draggable regions or content](https://wicg.github.io/window-controls-overlay/#defining-draggable-sections), which is highly relevant to this proposal.
 
@@ -41,7 +41,7 @@ These missing capabilities also prevent a broader set of web applications from o
 
 ## Proposal
 
-This proposal seeks to enable local web applications to convey a user's intended window control interactions with remote (or custom) window controls. Summary of the API proposals, which are generally gated by Window Management (“window-placement”) permission:
+This proposal seeks to enable local web applications to convey a user's intended window control interactions with remote (or custom) window controls. Summary of the API proposals, which are generally gated by Window Management permission:
 
 
 
@@ -184,7 +184,7 @@ window.matchMedia("(display-state: maximized)").matches;
 ```
 
 
-In addition VDI apps may request that the client window be made resizable or not, to match the behavior of the remote window, for that we would also add `window.setResizable(bool)` async API function and we would get the value with `window.resizable` property. A new `resizeablechange` event on `window` is not needed at this time, since that property is only toggled by the app itself.
+In addition VDI apps may request that the client window be made resizable or not, to match the behavior of the remote window, for that we would also add `window.setResizable(bool)` async API function and we would get the value with a `resizable` CSS media feature.
 
 
 ```css
@@ -256,7 +256,7 @@ A new `resizable` CSS media feature indicates whether the provided window object
 
 
 
-* `display-state` (& `resizable) `CSS media feature
+* `display-state` (& `resizable`) CSS media feature
     * PROs:
         * Precedent of [display-mode](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/display-mode)
         * Allows for UI changes to be specified strictly in CSS (no need for JS logic)
@@ -289,7 +289,7 @@ A new `resizable` CSS media feature indicates whether the provided window object
         * Poor ergonomics for checking state from event handlers
 * Async `await window.getDisplayState()` yields permission-gated access to a new `DisplayState` interface
     * PROs:
-        * Precedent of <code>[window.getScreenDetails()](https://w3c.github.io/window-placement/#api-extensions-to-window)</code>, <code>[navigator.getBattery()](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getBattery)</code>, and <code>[navigator.requestMIDIAccess()](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess)</code>
+        * Precedent of <code>[window.getScreenDetails()](https://w3c.github.io/window-management/#api-extensions-to-window)</code>, <code>[navigator.getBattery()](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getBattery)</code>, and <code>[navigator.requestMIDIAccess()](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess)</code>
         * Encapsulates permission-gated properties, methods, and event targets
         * Provides live data that callers can cache a reference to
     * CONs:
@@ -327,7 +327,7 @@ API usage would be gated by:
 
 
 
-*   Secure origins with the [Window Management (“Placement”) permission](https://w3c.github.io/window-placement/)
+*   Secure origins with the [Window Management permission](https://w3c.github.io/window-management/)
 *   Consuming a user gesture for `window.minimize()/maximize()/restore()` APIs:
     *   To make `restore()` work with minimized windows (which can’t get a user gesture) we will extend the capability delegation API (ie. `postMessage()` consumes activation in one window and transfers it to another window permitting it to `restore()`, even cross-origin)
 *   `window.minimize()/maximize()/restore()` are limited to:
@@ -344,12 +344,12 @@ Here are the most prevalent concerns raised by this API. Malicious sites may wis
 *   get window display state and resizable information (for fingerprinting)
 *   observe concurrent window display state changes across site boundaries (for cross-site identity joining)
 
-It is valuable to also consider concerns raised by preexisting window control APIs, such as `window.open()`, `window.moveTo|resizeTo()`, `window.close()`, `window.screenX|screenY|outerWidth|outerHeight`, `element.requestFullscreen()`, and others, as those likely apply to this API surface too. In general, the threats associated with this API functionality (especially restore) are the same as that of [multi-screen window placement](https://w3c.github.io/window-placement/). That is, if an app can open new windows or move and resize its existing windows anywhere on the device’s screens, then the ability to maximize, minimize, and restore its windows presents relatively little additional concern. It is worth noting that web apps today can [enter fullscreen (with a user gesture)](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullScreen) where they are given total control over the display.
+It is valuable to also consider concerns raised by preexisting window control APIs, such as `window.open()`, `window.moveTo|resizeTo()`, `window.close()`, `window.screenX|screenY|outerWidth|outerHeight`, `element.requestFullscreen()`, and others, as those likely apply to this API surface too. In general, the threats associated with this API functionality (especially restore) are the same as that of [window management](https://w3c.github.io/window-management/). That is, if an app can open new windows or move and resize its existing windows anywhere on the device’s screens, then the ability to maximize, minimize, and restore its windows presents relatively little additional concern. It is worth noting that web apps today can [enter fullscreen (with a user gesture)](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullScreen) where they are given total control over the display.
 
 
 ## References
 
-[Additional Explorations of Window Placement on the Web](https://github.com/webscreens/window-placement/blob/main/additional_explorations.md#extend-apis-to-control-window-state-display-modes-etc) - Helped inform API shape, contains more background.
+[Additional Explorations of Window Placement on the Web](https://github.com/w3c/window-management/blob/main/additional_explorations.md#extend-apis-to-control-window-state-display-modes-etc) - Helped inform API shape, contains more background.
 
 [Draggable region (Frameless Window | Electron)](https://www.electronjs.org/docs/latest/api/frameless-window#draggable-region) - Electron apps use -webkit-app-region CSS property to specify draggable regions.
 
