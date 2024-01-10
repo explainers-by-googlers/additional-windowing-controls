@@ -10,7 +10,10 @@ Last updated: Sep 05, 2023
 
 This proposal introduces additional ways for web applications to introspect and control their windows, to enable critical window management functionality on the web platform.
 
-The proposed enhancement would allow web applications to maximize, minimize, and restore their windows and introspect that window display state. Further, it allows applications to be notified when the window is repositioned, and control whether the window can be resized. The [window management permission](https://w3c.github.io/window-management/#api-permissions) will be required for these capabilities.
+The proposed enhancement would allow web applications to maximize, minimize, and restore their windows and introspect that window display state. Further, it allows applications to be notified when the window is repositioned, and control whether the window can be resized.
+
+The [window management permission](https://w3c.github.io/window-management/#api-permissions) will be required for the new JS APIs (window.maximize()/minimize()/restore()/setResizable(bool)).
+The new CSS media features `display-state` and `resizable` are not gated behind a permission as they can follow the non-AWC API toggled states as well. Also window.onmove event won't be gated behind any permission.
 
 
 ## Background
@@ -323,7 +326,7 @@ The window resizable property could be set statically during window creation (vi
 
 ## Security & Privacy Considerations
 
-API usage would be gated by:
+JS APIs usage would be gated by:
 
 
 
