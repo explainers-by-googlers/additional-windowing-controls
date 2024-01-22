@@ -14,7 +14,6 @@ The proposed enhancement would allow web applications to maximize, minimize, and
 
 The [window management permission](https://w3c.github.io/window-management/#api-permissions) will be required for the new JS APIs (window.maximize()/minimize()/restore()/setResizable(bool)).
 The new CSS media features `display-state` and `resizable` are not gated behind a permission as they can follow the non-AWC API toggled states as well. Also window.onmove event won't be gated behind any permission and unlike other APIs, it will be available to normal browser window too (not just web apps).
-available to normal browser window too (not just web apps).
 
 
 ## Background
