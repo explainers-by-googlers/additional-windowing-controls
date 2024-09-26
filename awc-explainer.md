@@ -222,7 +222,8 @@ A new `display-state` CSS media feature indicates the current display state of t
 
 A new `window.setResizable(bool)` async API asks the user agent to set whether users can resize the provided window object. It returns a Promise which is successfully resolved, or is rejected if there was an error (lack of permission). This allows VDI client applications to request that local windows match the behavior of the remote window.
 
-This API requests that the user agent prevent resize drag handles on top-level windows, and it has no effect on iframe windows. Fullscreen and maximize are prevented, but minimize and restore still work as expected. Not all resizes can be prevented (eg. window being moved to another display with a size smaller than the window) and it’s ultimately the client app's responsibility to handle such cases.
+This API requests that the user agent prevent resize drag handles on top-level windows, and it has no effect on iframe windows. Maximize is prevented, but minimize and restore still work as expected. Not all resizes can be prevented (e.g. window being moved to another display with a size smaller than the window) and it’s ultimately the client app's responsibility to handle such cases.
+While user-initiated attempts to enter fullscreen are prevented, applications can still utilize the [Fullscreen API](https://developer.mozilla.org/en-US/docs/Web/API/Fullscreen_API) (sc. `Element.requestFullscreen()`)  to request fullscreen programmatically. To prevent script-initiated fullscreen requests, developers can override `Element.prototype.requestFullscreen`, set an [HTTP `fullscreen` permission-policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permissions-Policy/fullscreen) or use the [FullscreenAllowed](https://chromeenterprise.google/policies/#FullscreenAllowed) enterprise policy for managed sessions.
 
 A new `resizable` CSS media feature indicates whether the provided window object is user resizable.
 
@@ -332,7 +333,7 @@ JS APIs usage would be gated by:
 
 *   Secure origins with the [Window Management permission](https://w3c.github.io/window-management/)
 *   Consuming a user gesture for `window.minimize()/maximize()/restore()` APIs:
-    *   To make `restore()` work with minimized windows (which can’t get a user gesture) we will extend the capability delegation API (ie. `postMessage()` consumes activation in one window and transfers it to another window permitting it to `restore()`, even cross-origin)
+    *   To make `restore()` work with minimized windows (which can’t get a user gesture) we will extend the capability delegation API (i.e. `postMessage()` consumes activation in one window and transfers it to another window permitting it to `restore()`, even cross-origin)
 *   `window.minimize()/maximize()/restore()` are limited to:
     *   Windows with ‘standalone’ or ‘minimal-ui’ [display-mode](https://www.w3.org/TR/mediaqueries-5/#display-mode), i.e. installed application windows, and origins running in their own window, whether installed or not, e.g. Chrome’s “Create shortcut…” with  “Open as window” checked
     *   Popup windows created by script, i.e. `window.open()` 
