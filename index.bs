@@ -1,0 +1,28 @@
+<pre class='metadata'>
+Title: The Additional Windowing Controls API
+Shortname: Additional Windowing Controls
+Level: None
+Status: w3c/UD
+Repository: explainers-by-googlers/additional-windowing-controls
+URL: https://explainers-by-googlers.github.io/additional-windowing-controls
+Editor: Mike Wasserman, Google https://google.com, msw@google.com
+Abstract: Additional APIs for web applications to introspect and control their windows
+Markup Shorthands: markdown yes, css no
+Complain About: accidental-2119 yes, missing-example-ids yes
+Assume Explicit For: yes
+Die On: warning
+WPT Path Prefix: TODO-API-LABEL
+WPT Display: closed
+Include MDN Panels: if possible
+Include Can I Use Panels: yes
+</pre>
+
+Introduction {#intro}
+=====================
+
+For now, see the [explainer]([README.md]).
+
+See [https://garykac.github.io/procspec/](https://garykac.github.io/procspec/),
+[https://dlaliberte.github.io/bikeshed-intro/index.html](https://dlaliberte.github.io/bikeshed-intro/index.html),
+and [https://speced.github.io/bikeshed/](https://speced.github.io/bikeshed/) to get started on your
+specificaton.
