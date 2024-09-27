@@ -75,7 +75,6 @@ An [open proposal to standardize](https://github.com/w3c/csswg-drafts/issues/701
 ```
 
 
-
 ### Obviate the need for polling window positions
 
 A new `move` event on `window` fires when the window’s position changes, in a pattern similar to the existing window <code>[resize](https://w3c.github.io/csswg-drafts/cssom-view-1/#resizing-viewports)</code> event, if the site has permission. When a user-agent determines that the window’s top left corner at coordinates (x, y) has moved (e.g. as a result of the user repositioning the browser window), run these steps:
