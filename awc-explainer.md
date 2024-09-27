@@ -47,7 +47,6 @@ These missing capabilities also prevent a broader set of web applications from o
 This proposal seeks to enable local web applications to convey a user's intended window control interactions with remote (or custom) window controls. Summary of the API proposals, which are generally gated by Window Management permission:
 
 
-
 *   `await window.minimize()/maximize()/restore()` changes the window display state
 *   `display-state` CSS media feature yields the current window display state
 *   `window.onmove` event is fired when the window moves
