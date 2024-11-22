@@ -50,7 +50,7 @@ This proposal seeks to enable local web applications to convey a user's intended
 *   `await window.setResizable(bool)` sets whether the window is user-resizable
 *   `resizable` CSS media feature yields whether the window is user-resizable
 
-Windows that are not user-resizable prevent resizing by the user, i.e. keyboard shortcuts, a UI mouse interaction, or menus, but still allows resizing by WebAPI calls (e.g., `window.maximize()`, `element.requestFullscreen()`, or `window.resizeTo()`).
+Windows that are not user-resizable prevent resizing by the user via keyboard shortcuts, mouse drag resize handles, window frame controls, and menus. Such windows do still allow resizing by Web APIs (e.g., `window.resizeTo()`, `window.maximize()`, and `element.requestFullscreen()`).
 
 Use cases explored here also rely upon a [parallel effort to standardize](https://github.com/w3c/csswg-drafts/issues/7017) the existing CSS property `-webkit-app-region/app-region`.
 
