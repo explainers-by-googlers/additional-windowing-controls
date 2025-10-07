@@ -20,8 +20,7 @@ The new CSS media features `display-state` and `resizable` are not gated behind 
 
 [Window Controls Overlay](https://wicg.github.io/window-controls-overlay/) offers new capabilities for web applications to control the area that would generally be occupied by the title bar in an installed web application running on a desktop environment. That specification also allows applications to [define draggable regions or content](https://wicg.github.io/window-controls-overlay/#defining-draggable-sections), which is highly relevant to this proposal.
 
-Demo glitch app that ties in proposals from this doc https://seamless-titlebar-example.glitch.me/
-
+See the [demo app](https://googlechrome.github.io/samples/seamless-titlebar/) that ties in proposals from this doc.
 
 ## Problem and Use Cases
 
