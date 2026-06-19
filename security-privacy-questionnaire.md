@@ -2,7 +2,7 @@
 
 > 01.  What information might this feature expose to Web sites or other parties, and for what purposes is that exposure necessary?
 
-The features exposes the display state of the window (minimized/maximized/normal/fullscreen), an event fired when the display state changes, an event fired when the window moves, and whether the window is user resizable.
+The feature exposes the display state of the window (minimized/maximized/normal/fullscreen), an event fired when the display state changes, and whether the window is user resizable.
 
 All of these are necessary for better native integration of VDI web clients.
 
